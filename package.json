@@ -1,0 +1,36 @@
+{
+  "name": "bulkhead-crew",
+  "version": "0.0.1",
+  "description": "A Bulkhead service for SailsJS that quickly integrates PassportJS.",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test node_modules/.bin/mocha test --recursive"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CodeOtter/bulkhead-crew.git"
+  },
+  "keywords": [
+    "sailsjs",
+    "soa",
+    "soap",
+    "rest",
+    "api",
+    "services",
+    "account",
+    "authentication",
+    "passportjs"
+  ],
+  "author": "Patrick Ryan <patrick.ryan@codeotter.com>",
+  "license": "GPL v2",
+  "bugs": {
+    "url": "https://github.com/CodeOtter/bulkhead-crew/issues"
+  },
+  "homepage": "https://github.com/CodeOtter/bulkhead-crew",
+  "dependencies": {
+    "bulkhead": "^0.0.2"
+  },
+  "devDependencies": {
+    "mocha": "^1.21.3"
+  }
+}
