@@ -4,7 +4,7 @@
   "description": "A Bulkhead service for SailsJS that quickly integrates PassportJS.",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test node_modules/.bin/mocha test --recursive"
+    "test": "NODE_ENV=test node_modules/bulkhead-test/node_modules/.bin/mocha test --recursive"
   },
   "repository": {
     "type": "git",
@@ -28,9 +28,18 @@
   },
   "homepage": "https://github.com/CodeOtter/bulkhead-crew",
   "dependencies": {
-    "bulkhead": "^0.0.2"
+    "async": "^0.9.0",
+    "bcrypt": "^0.8.0",
+    "bulkhead": "0.0.2",
+    "bulkhead-mailer": "0.0.1",
+    "guid": "0.0.12",
+    "passport": "^0.2.0",
+    "passport-local": "^1.0.0",
+    "validator": "^3.16.1"
   },
   "devDependencies": {
-    "mocha": "^1.21.3"
+    "bulkhead-test": "0.0.2",
+    "grunt": "^0.4.5",
+    "sails-mysql": "^0.10.4"
   }
 }
