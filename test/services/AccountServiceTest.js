@@ -1,14 +1,15 @@
 var suite = require('bulkhead-test'),
 	assert = require('assert'),
 	crew = require('../../index');
-	bulkhead = require('bulkhead');
+	bulkhead = require('bulkhead'),
+	mailer = require('bulkhead-mailer');
 
-describe('crew.service.account', function() {
+describe('crew.account', function() {
 	suite.lift(bulkhead.bootstrap.load);
 	describe('Base Class', function() {
 		it('should be able to find accounts based on multiple types of criteria', function(done) {
 			// Add mailer configuration for testing
-			crew.service.account.find(['bob@bob.com', { email: 'tim@tim.com' }, null], function(err, result) {
+			crew.account.find(['bob@bob.com', { email: 'tim@tim.com' }, null], function(err, result) {
 				assert.deepEqual(result.response(0), null);
 				assert.deepEqual(result.response(1).email, 'bob@bob.com');
 				assert.deepEqual(result.response(2).email, 'tim@tim.com');
@@ -18,7 +19,7 @@ describe('crew.service.account', function() {
 		});
 		
 		it('should register new accounts and delete them', function(done) {
-			crew.service.account.register('test@test.com', 'Test', 'Test', 0, 0, function(err, result) {
+			crew.account.register('test@test.com', 'Test', 'Test', 0, 0, function(err, result) {
 				// Create the account
 				if(err) {
 					assert.fail(err);
@@ -30,7 +31,7 @@ describe('crew.service.account', function() {
 				assert.deepEqual(account.status, 0);
 				assert.ok(account.password.length > 0);
 				
-				crew.service.account.find('test@test.com', function(err, account) {
+				crew.account.find('test@test.com', function(err, account) {
 					// Confirm its in the database
 					if(err) {
 						assert.fail(err);
@@ -42,14 +43,14 @@ describe('crew.service.account', function() {
 					assert.deepEqual(account.status, 0);
 					assert.ok(account.password.length > 0);
 					
-					crew.service.account.remove(account, function(err, result) {
+					crew.account.remove(account, function(err, result) {
 						// Remove the new account
 						if(err) {
 							assert.fail(err);
 						}
 						assert.ok(result.response() == true);
 						
-						crew.service.account.find('test@test.com', function(err, result) {
+						crew.account.find('test@test.com', function(err, result) {
 							// Confirm the account has been removed
 							if(err) {
 								assert.fail(err);
@@ -64,19 +65,19 @@ describe('crew.service.account', function() {
 		});
 
 		it('should disable then renable an account', function(done) {
-			crew.service.account.find('bob@bob.com', function(err, result) {
+			crew.account.find('bob@bob.com', function(err, result) {
 				// Find the fixture
 				var account = result.response();
 				assert.deepEqual(account.status, Account.constants.status.unverified);
-				crew.service.account.disable(account, function(err, result) {
+				crew.account.disable(account, function(err, result) {
 					// Disable the account
-					crew.service.account.find(account.id, function(err, result) {
+					crew.account.find(account.id, function(err, result) {
 						// Find the account again to make sure the database change committed
 						var account = result.response();
 						assert.deepEqual(account.status, Account.constants.status.disabled);
-						crew.service.account.enable(account, function(err, result) {
+						crew.account.enable(account, function(err, result) {
 							// Enable the account
-							crew.service.account.find(account.id, function(err, result) {
+							crew.account.find(account.id, function(err, result) {
 								// Find the account again to make sure the database change committed
 								var account = result.response();
 								assert.deepEqual(account.status, Account.constants.status.active);
@@ -90,7 +91,7 @@ describe('crew.service.account', function() {
 		});
 
 		it('should get accounts by login credentials', function(done) {
-			crew.service.account.getByLogin('bob@bob.com', 'Bob', function(err, result) {
+			crew.account.getByLogin('bob@bob.com', 'Bob', function(err, result) {
 				// Check if the account can correctly login
 				if(err) {
 					assert.fail(err);
@@ -102,20 +103,20 @@ describe('crew.service.account', function() {
 				assert.deepEqual(account.status, Account.constants.status.active);
 				assert.ok(account.password.length > 0);
 				
-				crew.service.account.getByLogin('ralph@ralph.com', 'Ralph', function(err, result) {
+				crew.account.getByLogin('ralph@ralph.com', 'Ralph', function(err, result) {
 					// Attempt to login with an account that isn't there
 					assert.deepEqual(result.message(), 'account not found');
 					assert.deepEqual(result.response(), false);
 					
-					crew.service.account.getByLogin('bob@bob.com', 'berb', function(err, result) {
+					crew.account.getByLogin('bob@bob.com', 'berb', function(err, result) {
 						// Login with an account that is there, but with a bad password
 						assert.deepEqual(result.message(), 'invalid password');
 						assert.deepEqual(result.response(), false);
 						
-						crew.service.account.disable('bob@bob.com', function(err, result) {
+						crew.account.disable('bob@bob.com', function(err, result) {
 							// Disable an account...
 
-							crew.service.account.getByLogin('bob@bob.com', 'Bob', function(err, result) {
+							crew.account.getByLogin('bob@bob.com', 'Bob', function(err, result) {
 								// ... to make sure it fails when you try to login again.
 								assert.deepEqual(result.message(), 'account is disabled');
 								assert.deepEqual(result.response(), false);
@@ -128,9 +129,9 @@ describe('crew.service.account', function() {
 		});
 
 		it('should create and consume a general token', function(done) {
-			crew.service.account.find('bob@bob.com', function(err, result) {
+			crew.account.find('bob@bob.com', function(err, result) {
 				var account = result.response();
-				crew.service.token.create(result.response(), null, null, null, null, function(err, result) {
+				crew.token.create(result.response(), null, null, null, null, function(err, result) {
 					// Create a token
 					if(err) {
 						assert.fail(err);
@@ -142,8 +143,8 @@ describe('crew.service.account', function() {
 					assert.deepEqual(token.contents, null);
 					assert.deepEqual(token.type, AccountToken.constants.type.passwordVerification);
 					assert.deepEqual(token.status, AccountToken.constants.status.pending);
-					
-					crew.service.token.find(token.id, function(err, result) {
+
+					crew.token.find(token.id, function(err, result) {
 						// Confirm the token exists
 						if(err) assert.fail(err);
 						var token2 = result.response();
@@ -152,7 +153,7 @@ describe('crew.service.account', function() {
 						assert.deepEqual(token.expiresAt, token2.expiresAt);
 						assert.deepEqual(token.type, token2.type);
 						assert.deepEqual(token.status, token2.status);
-						
+
 						Account.findOne(account.id).populate('tokens').exec(function(err, account) {
 							// Confirm the token binds to the account correctly
 							if(err) assert.fail(err);
@@ -165,16 +166,16 @@ describe('crew.service.account', function() {
 							assert.deepEqual(token.type, token2.type);
 							assert.deepEqual(token.status, token2.status);
 							
-							crew.service.token.consume(token.guid, function(err, result) {
+							crew.token.consume(token.guid, function(err, result) {
 								// Consume the token
 								if(err) assert.fail(err);
 								assert.deepEqual(result.response(), null);
-								crew.service.token.consume(token.guid, function(err, result) {
+								crew.token.consume(token.guid, function(err, result) {
 									// Ensure the token cannot be consumed again
 									if(err) assert.fail(err);
 									assert.deepEqual(result.response(), false);
 									
-									crew.service.token.find(token.id, function(err, result) {
+									crew.token.find(token.id, function(err, result) {
 										// Confirm the token is correctly consumed
 										if(err) assert.fail(err);
 										var token2 = result.response();
@@ -196,12 +197,12 @@ describe('crew.service.account', function() {
 											assert.deepEqual(token.type, token2.type);
 											assert.deepEqual(token2.status, AccountToken.constants.status.consumed);
 											
-											crew.service.token.cleanup(function(err, result) {
+											crew.token.cleanup(function(err, result) {
 												// Remove all expired tokens
 												if(err) assert.fail(err);
 												assert.ok(result.response());
 												
-												crew.service.token.find(token.id, function(err, result) {
+												crew.token.find(token.id, function(err, result) {
 													// Make sure the token no longer exists
 													if(err) assert.fail(err);
 													assert.deepEqual(result.response(), undefined);
@@ -227,50 +228,50 @@ describe('crew.service.account', function() {
 		});
 		
 		it('should verify an email address', function(done) {
-			crew.service.account.find('ed@ed.com', function(err, result) {
+			crew.account.find('ed@ed.com', function(err, result) {
 				// Get an account
 				if(err) assert.fail(err);
 				var account = result.response();
 
-				crew.service.token.create(account, AccountToken.constants.type.emailVerification, null, null, 'ted@ted2.com', function(err, result) {
+				crew.token.create(account, AccountToken.constants.type.emailVerification, null, null, 'ted@ted2.com', function(err, result) {
 					// Create a token for the account
 					if(err) {
 						assert.fail(err);
 					}
 					var token = result.response();
 
-					crew.service.account.verifyEmail(account, token, function(err, result) {
+					crew.account.verifyEmail(account, token, function(err, result) {
 						// Consume the token to verify the email
 						if(err) assert.fail(err);
 						assert.ok(result.response() !== false);
 						
-						crew.service.account.find(account, function(err, result) {
+						crew.account.find(account, function(err, result) {
 							// Confirm the account changed status
 							if(err) assert.fail(err);
 							var account = result.response();
 							assert.ok(account.status === Account.constants.status.active);
 							assert.ok(account.email === token.contents);
 
-							crew.service.token.find(token, function(err, result) {
+							crew.token.find(token, function(err, result) {
 								// Confirm the token changed
 								if(err) assert.fail(err);
 								var token = result.response();
 								assert.ok(token.status === AccountToken.constants.status.consumed);
 
-								crew.service.account.verifyEmail(account, token, function(err, result) {
+								crew.account.verifyEmail(account, token, function(err, result) {
 									// Confirm the email cannot be verified twice
 									assert.ok(!result.response());
 
-									crew.service.account.find(account, function(err, result) {
+									crew.account.find(account, function(err, result) {
 										// Confirm the account remained the same
 										if(err) assert.fail(err);
 										assert.ok(result.response().status === Account.constants.status.active);
-										crew.service.token.find(token, function(err, result) {
+										crew.token.find(token, function(err, result) {
 											// Confirm the token remained the same
 											if(err) assert.fail(err);
 											var token = result.response();
 											assert.ok(token.status === AccountToken.constants.status.consumed);
-											crew.service.token.cleanup(function(err, result) {
+											crew.token.cleanup(function(err, result) {
 												if(err) assert.fail(err);
 												assert.ok(result.response());
 												done();
@@ -286,9 +287,9 @@ describe('crew.service.account', function() {
 		});
 		
 		it('should expire a token', function(done) {
-			crew.service.account.find('bob@bob.com', function(err, result) {
+			crew.account.find('bob@bob.com', function(err, result) {
 				var account = result.response();
-				crew.service.token.create(result.response(), null, null, -360000, null, function(err, result) {
+				crew.token.create(result.response(), null, null, -360000, null, function(err, result) {
 					// Create a token
 					if(err) {
 						assert.fail(err);
@@ -301,17 +302,17 @@ describe('crew.service.account', function() {
 					assert.deepEqual(token.type, AccountToken.constants.type.passwordVerification);
 					assert.deepEqual(token.status, AccountToken.constants.status.pending);
 							
-					crew.service.token.consume(token.guid, function(err, result) {
+					crew.token.consume(token.guid, function(err, result) {
 						// Consume the token
 						if(err) assert.fail(err);
 						assert.deepEqual(result.response(), false);
 
-						crew.service.token.cleanup(function(err, result) {
+						crew.token.cleanup(function(err, result) {
 							// Remove all expired tokens
 							if(err) assert.fail(err);
 							assert.ok(result.response());
 							
-							crew.service.token.find(token.id, function(err, result) {
+							crew.token.find(token.id, function(err, result) {
 								// Make sure the token no longer exists
 								if(err) assert.fail(err);
 								assert.deepEqual(result.response(), undefined);
@@ -323,7 +324,7 @@ describe('crew.service.account', function() {
 
 									assert.deepEqual(result.response(), undefined);
 
-									crew.service.account.enable(account, function(err, account) {
+									crew.account.enable(account, function(err, account) {
 										if(err) assert.fail(err);
 										done();	
 									});
@@ -336,9 +337,9 @@ describe('crew.service.account', function() {
 		});
 
 		it('should reset an accounts password', function(done) {
-			crew.service.account.find('tim@tim.com', function(err, result) {
+			crew.account.find('tim@tim.com', function(err, result) {
 				var account = result.response();
-				crew.service.account.requestPasswordReset(result.response(), function(err, result) {
+				crew.account.requestPasswordReset(result.response(), function(err, result) {
 					// Create a token
 					if(err) {
 						assert.fail(err);
@@ -351,17 +352,17 @@ describe('crew.service.account', function() {
 					assert.deepEqual(token.type, AccountToken.constants.type.passwordVerification);
 					assert.deepEqual(token.status, AccountToken.constants.status.pending);
 
-					crew.service.account.resetPassword(account, token.guid, 'tested', function(err, result) {
+					crew.account.resetPassword(account, token.guid, 'tested', function(err, result) {
 						// Consume the token
 						if(err) assert.fail(err);
 						assert.deepEqual(result.response(), true);
 
-						crew.service.token.cleanup(function(err, result) {
+						crew.token.cleanup(function(err, result) {
 							// Remove all expired tokens
 							if(err) assert.fail(err);
 							assert.ok(result.response());
 							
-							crew.service.token.find(token.id, function(err, result) {
+							crew.token.find(token.id, function(err, result) {
 								// Make sure the token no longer exists
 								if(err) assert.fail(err);
 								assert.deepEqual(result.response(), undefined);
@@ -374,7 +375,7 @@ describe('crew.service.account', function() {
 									assert.deepEqual(result.response(), undefined);
 									assert.ok(account.password[0] === '$');
 									
-									crew.service.account.getByLogin('tim@tim.com', 'tested', function(err, result) {
+									crew.account.getByLogin('tim@tim.com', 'tested', function(err, result) {
 										// Check if the account can correctly login
 										if(err) {
 											assert.fail(err);
@@ -396,9 +397,9 @@ describe('crew.service.account', function() {
 		});
 
 		it('should verify an email address', function(done) {
-			crew.service.account.find('tim@tim.com', function(err, result) {
+			crew.account.find('tim@tim.com', function(err, result) {
 				var account = result.response();
-				crew.service.account.requestEmailChange(result.response(), 'john@john.com', function(err, result) {
+				crew.account.requestEmailChange(result.response(), 'john@john.com', function(err, result) {
 					// Create a token
 					if(err) {
 						assert.fail(err);
@@ -411,17 +412,17 @@ describe('crew.service.account', function() {
 					assert.deepEqual(token.type, AccountToken.constants.type.emailVerification);
 					assert.deepEqual(token.status, AccountToken.constants.status.pending);
 
-					crew.service.account.verifyEmail(account, token.guid, function(err, result) {
+					crew.account.verifyEmail(account, token.guid, function(err, result) {
 						// Consume the token
 						if(err) assert.fail(err);
 						assert.deepEqual(result.response(), 'john@john.com');
 
-						crew.service.token.cleanup(function(err, result) {
+						crew.token.cleanup(function(err, result) {
 							// Remove all expired tokens
 							if(err) assert.fail(err);
 							assert.ok(result.response());
 							
-							crew.service.token.find(token.id, function(err, result) {
+							crew.token.find(token.id, function(err, result) {
 								// Make sure the token no longer exists
 								if(err) assert.fail(err);
 								assert.deepEqual(result.response(), undefined);
@@ -434,7 +435,7 @@ describe('crew.service.account', function() {
 									assert.deepEqual(result.response(), undefined);
 									assert.ok(account.password[0] === '$');
 									
-									crew.service.account.getByLogin('john@john.com', 'tested', function(err, result) {
+									crew.account.getByLogin('john@john.com', 'tested', function(err, result) {
 										// Check if the account can correctly login
 										if(err) {
 											assert.fail(err);
@@ -458,7 +459,7 @@ describe('crew.service.account', function() {
 		});
 		
 		it('should update the account', function(done) {
-			crew.service.account.update('bob@bob.com', 'kyle@kyle.com', 'password', 'Kyle', function(err, results){
+			crew.account.update('bob@bob.com', 'kyle@kyle.com', 'password', 'Kyle', function(err, results){
 				if(err) assert.fail(err);
 				var account = results.response();
 
@@ -479,15 +480,15 @@ describe('crew.service.account', function() {
 							emailToken = tokens[0];
 					}
 
-					crew.service.account.resetPassword(account, passwordToken.guid, 'password', function(err, result) {
+					crew.account.resetPassword(account, passwordToken.guid, 'password', function(err, result) {
 						if(err) assert.fail(err);
 						assert.ok(result.response() !== false);
 
-						crew.service.account.verifyEmail(account, emailToken.guid, function(err, result) {
+						crew.account.verifyEmail(account, emailToken.guid, function(err, result) {
 							if(err) assert.fail(err);
 							assert.ok(result.response() !== false);
 
-							crew.service.account.getByLogin('kyle@kyle.com', 'password', function(err, result) {
+							crew.account.getByLogin('kyle@kyle.com', 'password', function(err, result) {
 								// Check if the account can correctly login
 								if(err) {
 									assert.fail(err);
@@ -497,7 +498,7 @@ describe('crew.service.account', function() {
 								assert.deepEqual(account.name, 'Kyle');
 								assert.deepEqual(account.type, 0);
 								assert.deepEqual(account.status, Account.constants.status.active);
-								crew.service.token.cleanup(function(err, result) {
+								crew.token.cleanup(function(err, result) {
 									if(err) assert.fail(err);
 									done();
 								});
