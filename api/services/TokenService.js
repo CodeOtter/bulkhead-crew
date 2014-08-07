@@ -113,7 +113,7 @@ module.exports = new function(){
 			}, { 
 				status: AccountToken.constants.status.consumed 
 			}
-		]}).done(function(err) {
+		]}, function(err) {
 			done(err, self.result(true));
 		});
 	};

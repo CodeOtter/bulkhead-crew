@@ -261,7 +261,7 @@ module.exports = new function(){
 					}
 
 					// The token was generated
-					mailer.service.dispatch(
+					mailer.dispatch(
 						account.name + ' <' + account.email + '>',
 						null,
 						'Your new email needs to be confirmed',
@@ -302,12 +302,12 @@ module.exports = new function(){
 					var token = results.response();
 					
 					if(results.message() !== undefined) {
-						// Token generation failed 
+						// Token generation failed
 						return next(null, new Bulkhead.result(account, false, results.message()));
 					}
 
 					// The token was generated
-					mailer.service.dispatch(
+					mailer.dispatch(
 						account.name + ' <' + account.email + '>',
 						null,
 						'Your password reset request',

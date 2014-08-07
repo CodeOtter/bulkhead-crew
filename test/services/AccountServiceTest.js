@@ -150,7 +150,7 @@ describe('crew.account', function() {
 						var token2 = result.response();
 						assert.deepEqual(token.id, token2.id);
 						assert.deepEqual(token.contents, token2.contents);
-						assert.deepEqual(token.expiresAt, token2.expiresAt);
+						assert.deepEqual(parseInt(token.expiresAt.getTime()/1000), parseInt(token2.expiresAt.getTime()/1000));
 						assert.deepEqual(token.type, token2.type);
 						assert.deepEqual(token.status, token2.status);
 
@@ -162,7 +162,7 @@ describe('crew.account', function() {
 							assert.deepEqual(account.tokens.length, 1);
 							assert.deepEqual(token.id, token2.id);
 							assert.deepEqual(token.contents, token2.contents);
-							assert.deepEqual(token.expiresAt, token2.expiresAt);
+							assert.deepEqual(parseInt(token.expiresAt.getTime()/1000), parseInt(token2.expiresAt.getTime()/1000));
 							assert.deepEqual(token.type, token2.type);
 							assert.deepEqual(token.status, token2.status);
 							
@@ -181,7 +181,7 @@ describe('crew.account', function() {
 										var token2 = result.response();
 										assert.deepEqual(token.id, token2.id);
 										assert.deepEqual(token.contents, token2.contents);
-										assert.deepEqual(token.expiresAt, token2.expiresAt);
+										assert.deepEqual(parseInt(token.expiresAt.getTime()/1000), parseInt(token2.expiresAt.getTime()/1000));
 										assert.deepEqual(token.type, token2.type);
 										assert.deepEqual(token2.status, AccountToken.constants.status.consumed);
 										
@@ -193,7 +193,7 @@ describe('crew.account', function() {
 											assert.deepEqual(account.tokens.length, 1);
 											assert.deepEqual(token.id, token2.id);
 											assert.deepEqual(token.contents, token2.contents);
-											assert.deepEqual(token.expiresAt, token2.expiresAt);
+											assert.deepEqual(parseInt(token.expiresAt.getTime()/1000), parseInt(token2.expiresAt.getTime()/1000));
 											assert.deepEqual(token.type, token2.type);
 											assert.deepEqual(token2.status, AccountToken.constants.status.consumed);
 											
