@@ -7,7 +7,7 @@ var TokenService = require('./TokenService'),
 
 module.exports = new function(){
 	var self = this;
-	
+
 	Bulkhead.service.call(this, 'Account', {
 		'string': function(criteria, next) {
 			self.getModel().findOneByEmail(criteria, next);
@@ -39,11 +39,11 @@ module.exports = new function(){
 			data.type = Account.constants.type.standard;		// @TODO: Only let admins set type
 			data.status = Account.constants.status.unverified;	// @TODO: Only let admins set status
 
-			if(!PolicyService.account.isEmailValid(data.email)) {
+			if(!self.PolicyService.account.isEmailValid(data.email)) {
 				errors.push('email is invalid');
 			}
 
-			if(!PolicyService.account.isPasswordValid(data.email)) {
+			if(!self.PolicyService.account.isPasswordValid(data.email)) {
 				errors.push('password is invalid');
 			}
 
