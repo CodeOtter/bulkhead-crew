@@ -8,6 +8,7 @@ describe('crew.account', function() {
 	describe('Base Class', function() {
 		it('should be able to find accounts based on multiple types of criteria', function(done) {
 			// Add mailer configuration for testing
+
 			crew.find(['bob@bob.com', { email: 'tim@tim.com' }, null], function(err, result) {
 				assert.deepEqual(result.response(0), null);
 				assert.deepEqual(result.response(1).email, 'bob@bob.com');

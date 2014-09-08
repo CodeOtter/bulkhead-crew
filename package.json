@@ -4,7 +4,7 @@
   "description": "A Bulkhead service for SailsJS that quickly integrates PassportJS.",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test node_modules/bulkhead-test/node_modules/.bin/mocha test --recursive -t 5000"
+    "test": "NODE_ENV=test node_modules/bulkhead-test/node_modules/.bin/mocha test --recursive"
   },
   "repository": {
     "type": "git",
