@@ -8,10 +8,13 @@ var async = require('async'),
  */
 module.exports = new function(){
 
-	var self = this;
+	
 
 	Bulkhead.service.call(this);
 
+	var self = this,
+		pkg = this.bulkhead;
+	
 	self.account = {
 
 		/**
@@ -20,7 +23,7 @@ module.exports = new function(){
 		 * @returns {Boolean}
 		 */
 		isActive: function(account) { 
-			return account.status === Account.constants.status.active;
+			return account.status === self.bulkhead.Account.constants.status.active;
 		},
 
 		/**
@@ -29,7 +32,7 @@ module.exports = new function(){
 		 * @returns {Boolean}
 		 */
 		isInactive: function(account) {
-			return account.status !== Account.constants.status.active;
+			return account.status !== self.bulkhead.Account.constants.status.active;
 		},
 
 		/**
@@ -38,7 +41,7 @@ module.exports = new function(){
 		 * @returns {Boolean}
 		 */
 		isDisabled: function(account) {
-			return account.status === Account.constants.status.disabled;
+			return account.status === self.bulkhead.Account.constants.status.disabled;
 		},
 
 		/**
@@ -47,7 +50,7 @@ module.exports = new function(){
 		 * @returns {Boolean}
 		 */
 		isUnverified: function(account) {
-			return account.status === Account.constants.status.unverified;
+			return account.status === self.bulkhead.Account.constants.status.unverified;
 		},
 
 		/**
@@ -55,10 +58,10 @@ module.exports = new function(){
 		 * @param account
 		 */
 		isPendingEmailChange: function(account, done) {
-			TokenService.find({ 
+			self.bulkhead.TokenService.find({ 
 				account: account.id,
-				type: AccountToken.constants.type.emailVerification,
-				status: AccountToken.constants.status.pending
+				type: self.bulkhead.AccountToken.constants.type.emailVerification,
+				status: self.bulkhead.AccountToken.constants.status.pending
 			}, function(err, tokens) {
 				if(err)
 					return self.result(false, done, account, 'database failure', err);
@@ -71,10 +74,10 @@ module.exports = new function(){
 		 * @param account
 		 */
 		isPendingPasswordChange: function(account, done) {
-			TokenService.find({ 
+			self.bulkhead.TokenService.find({ 
 				account: account.id,
-				type: AccountToken.constants.type.passwordVerification,
-				status: AccountToken.constants.status.pending
+				type: self.bulkhead.AccountToken.constants.type.passwordVerification,
+				status: self.bulkhead.AccountToken.constants.status.pending
 			}, function(err, tokens) {
 				if(err)
 					return self.result(false, done, account, 'database failure', err);

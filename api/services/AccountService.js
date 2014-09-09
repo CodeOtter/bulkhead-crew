@@ -78,7 +78,7 @@ module.exports = new function(){
 		}, function(changes, record, next) {
 			// Validation
 
-			if(PolicyService.account.isInactive(record)) {
+			if(self.PolicyService.account.isInactive(record)) {
 				return next('cannot update disabled account', changes);
 			}
 
@@ -89,7 +89,7 @@ module.exports = new function(){
 			if(email !== null || email !== undefined) { 
 				// An email change has been detected
 				email = String(email);
-				if(!PolicyService.account.isEmailValid(email)) {
+				if(!self.PolicyService.account.isEmailValid(email)) {
 					// The email is invalid
 					errors.push('email is invalid');
 				} else {
@@ -103,7 +103,7 @@ module.exports = new function(){
 			if(password !== null || password !== undefined) {
 				// A password change has been detected
 				password = String(password);
-				if(!PolicyService.account.isPasswordValid(password)) {
+				if(!self.PolicyService.account.isPasswordValid(password)) {
 					// The password is invalid
 					errors.push('password is invalid');
 				} else {
@@ -125,7 +125,7 @@ module.exports = new function(){
 
 			async.parallel(tasks, function(err, tokens) {
 				if(err) {
-					TokenService.remove(tokens, function(err, results) {
+					self.TokenService.remove(tokens, function(err, results) {
 						if(err)
 							return self.result(false, done, id, 'database failure', err);
 						if(!results)
@@ -148,10 +148,10 @@ module.exports = new function(){
 	this.disable = function(criteria, done) {
 		var self = this;
 		this.findAndDo(criteria, function(account, next) {
-			Account.update({
+			self.Account.update({
 				id: account.id
 			},{
-				status: Account.constants.status.disabled
+				status: self.Account.constants.status.disabled
 			}, function(err, account) {
 				// @TODO: Destroy all tokens for a disabled account?
 				next(err, new Bulkhead.result(account.id, account));	
@@ -171,10 +171,10 @@ module.exports = new function(){
 		var self = this;
 		this.findAndDo(criteria, function(account, next) {
 			// Enable the account
-			Account.update({
+			self.Account.update({
 				id: account.id
 			},{
-				status: Account.constants.status.active
+				status: self.Account.constants.status.active
 			}, function(err, account) {
 				next(err, new Bulkhead.result(account.id, account));	
 			});
@@ -192,7 +192,7 @@ module.exports = new function(){
 	 */
 	this.getByLogin = function(email, password, done) {
 		var self = this;
-		Account.findOneByEmail(email, function (err, account) {
+		self.Account.findOneByEmail(email, function (err, account) {
 	      if (err) {
 	    	  // The database has failed
 	    	  return self.result(false, done, email, 'database failure', err);
@@ -209,7 +209,7 @@ module.exports = new function(){
 	          if (match) {
 	            // The password comparison worked
 
-	        	if(account.status == Account.constants.status.disabled) {
+	        	if(account.status == self.Account.constants.status.disabled) {
 	        		return self.result(false, done, email, 'account is disabled');
 	        	}
 	        	
@@ -236,7 +236,7 @@ module.exports = new function(){
 		var self = this,
 			email = (email).toString();
 		
-		if(!PolicyService.account.isEmailValid(email)) {
+		if(!self.PolicyService.account.isEmailValid(email)) {
 			return self.result(false, done, email, 'email is invalid');
 		}
 		
@@ -247,7 +247,7 @@ module.exports = new function(){
 				return self.result(false, done, criteria, 'account not found');
 
 			var account = results.response();
-			TokenService.create(account, AccountToken.constants.type.emailVerification, AccountToken.constants.status.pending, null, email,
+			self.TokenService.create(account, self.AccountToken.constants.type.emailVerification, self.AccountToken.constants.status.pending, null, email,
 				function(err, results) {
 					if(err) {
 						// Database error
@@ -265,7 +265,7 @@ module.exports = new function(){
 						account.name + ' <' + account.email + '>',
 						null,
 						'Your new email needs to be confirmed',
-						'Please click on this link to verify your email address: ' + TokenService.getClaimTokenUrl('accounts/verifyEmail/' + account.id, token),
+						'Please click on this link to verify your email address: ' + self.TokenService.getClaimTokenUrl('accounts/verifyEmail/' + account.id, token),
 						null,
 						null,
 						function(err, message) {
@@ -293,7 +293,7 @@ module.exports = new function(){
 		var self = this;
 		this.findAndDo(criteria, function(account, next) {
 			// Get an account
-			TokenService.create(account, AccountToken.constants.type.passwordReset, AccountToken.constants.status.pending, null, null,
+			self.TokenService.create(account, self.AccountToken.constants.type.passwordReset, self.AccountToken.constants.status.pending, null, null,
 				function(err, results) {
 					if(err) {
 						// Database error
@@ -311,7 +311,7 @@ module.exports = new function(){
 						account.name + ' <' + account.email + '>',
 						null,
 						'Your password reset request',
-						'Please click on this link to change your password: ' + TokenService.getClaimTokenUrl('accounts/changePassword/' + account.id, token),
+						'Please click on this link to change your password: ' + self.TokenService.getClaimTokenUrl('accounts/changePassword/' + account.id, token),
 						null,
 						null,
 						function(err, message) {
@@ -342,7 +342,7 @@ module.exports = new function(){
 	this.verifyEmail = function(account, guid, done) {
 		var self = this;
 
-		TokenService.find(guid, function(err, results) {
+		self.TokenService.find(guid, function(err, results) {
 			if(err)
 				return self.result(false, done, guid, 'database failure', err);
 			if(results.isEmpty())
@@ -351,7 +351,7 @@ module.exports = new function(){
 			// Get the token
 			var token = results.response();
 
-			if(token.type !== undefined && token.type === AccountToken.constants.type.emailVerification) {
+			if(token.type !== undefined && token.type === self.AccountToken.constants.type.emailVerification) {
 				// Token found and is an email verification token
 				self.find(account, function(err, results) {
 					if(err)
@@ -368,19 +368,19 @@ module.exports = new function(){
 
 
 					// The account is properly unverified
-					TokenService.consume(token, function(err, results) {
+					self.TokenService.consume(token, function(err, results) {
 						// Consume the token
 						if(results.message() === undefined) {
 							// The token was successfully consumed
-							Account.update({
+							self.Account.update({
 								id: account.id
 							}, {
-								status: Account.constants.status.active,
+								status: self.Account.constants.status.active,
 								email: token.contents
 							}, function(err, account) {
 								if(err) {
 									// An error occurred, reset the token
-									TokenService.reset(token, function(err, results) {
+									self.TokenService.reset(token, function(err, results) {
 										return self.result(false, done, guid, 'database failure', err);
 									});
 								} else {
@@ -410,11 +410,11 @@ module.exports = new function(){
 		var self = this,
 			password = (password).toString();
 
-		if(!PolicyService.account.isPasswordValid(password)) {
+		if(!self.PolicyService.account.isPasswordValid(password)) {
 			return self.result(false, done, password, 'password is invalid');
 		}
 
-		TokenService.find(guid, function(err, results) {
+		self.TokenService.find(guid, function(err, results) {
 			if(err) 
 				return self.result(false, done, guid, 'database failure', err);
 			if(results.isEmpty())
@@ -423,7 +423,7 @@ module.exports = new function(){
 			// Get the token
 			var token = results.response();
 
-			if(token.type !== undefined && token.type === AccountToken.constants.type.passwordVerification) {
+			if(token.type !== undefined && token.type === self.AccountToken.constants.type.passwordVerification) {
 				// Token found and is an email verification token
 				self.find(account, function(err, results) {
 
@@ -440,18 +440,18 @@ module.exports = new function(){
 					}
 
 					// The account is properly unverified
-					TokenService.consume(token, function(err, results) {
+					self.TokenService.consume(token, function(err, results) {
 						// Consume the token
 						if(results.message() === undefined) {
 							// The token was successfully consumed
-							Account.update({
+							self.Account.update({
 								id: account.id
 							}, {
 								password: password
 							}, function(err, account) {
 								if(err) {
 									// An error occurred, reset the token
-									TokenService.reset(token, function(err, results) {
+									self.TokenService.reset(token, function(err, results) {
 										return self.result(false, done, guid, 'database failure', err);
 									});
 								} else {
