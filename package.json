@@ -30,15 +30,15 @@
   "dependencies": {
     "async": "^0.9.0",
     "bcrypt": "^0.8.0",
-    "bulkhead": "0.0.2",
-    "bulkhead-mailer": "0.0.1",
+    "bulkhead": "0.0.6",
+    "bulkhead-mailer": "0.0.4",
     "guid": "0.0.12",
     "passport": "^0.2.0",
     "passport-local": "^1.0.0",
     "validator": "^3.16.1"
   },
   "devDependencies": {
-    "bulkhead-test": "0.0.2",
+    "bulkhead-test": "0.0.4",
     "grunt": "^0.4.5",
     "sails-mysql": "^0.10.4"
   }

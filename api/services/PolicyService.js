@@ -23,7 +23,7 @@ module.exports = new function(){
 		 * @returns {Boolean}
 		 */
 		isActive: function(account) { 
-			return account.status === self.bulkhead.Account.constants.status.active;
+			return account.status === self.plugin.Account.constants.status.active;
 		},
 
 		/**
@@ -32,7 +32,7 @@ module.exports = new function(){
 		 * @returns {Boolean}
 		 */
 		isInactive: function(account) {
-			return account.status !== self.bulkhead.Account.constants.status.active;
+			return account.status !== self.plugin.Account.constants.status.active;
 		},
 
 		/**
@@ -41,7 +41,7 @@ module.exports = new function(){
 		 * @returns {Boolean}
 		 */
 		isDisabled: function(account) {
-			return account.status === self.bulkhead.Account.constants.status.disabled;
+			return account.status === self.plugin.Account.constants.status.disabled;
 		},
 
 		/**
@@ -50,7 +50,7 @@ module.exports = new function(){
 		 * @returns {Boolean}
 		 */
 		isUnverified: function(account) {
-			return account.status === self.bulkhead.Account.constants.status.unverified;
+			return account.status === self.plugin.Account.constants.status.unverified;
 		},
 
 		/**
@@ -58,10 +58,10 @@ module.exports = new function(){
 		 * @param account
 		 */
 		isPendingEmailChange: function(account, done) {
-			self.bulkhead.TokenService.find({ 
+			self.plugin.TokenService.find({ 
 				account: account.id,
-				type: self.bulkhead.AccountToken.constants.type.emailVerification,
-				status: self.bulkhead.AccountToken.constants.status.pending
+				type: self.plugin.AccountToken.constants.type.emailVerification,
+				status: self.plugin.AccountToken.constants.status.pending
 			}, function(err, tokens) {
 				if(err)
 					return self.result(false, done, account, 'database failure', err);
@@ -74,10 +74,10 @@ module.exports = new function(){
 		 * @param account
 		 */
 		isPendingPasswordChange: function(account, done) {
-			self.bulkhead.TokenService.find({ 
+			self.plugin.TokenService.find({ 
 				account: account.id,
-				type: self.bulkhead.AccountToken.constants.type.passwordVerification,
-				status: self.bulkhead.AccountToken.constants.status.pending
+				type: self.plugin.AccountToken.constants.type.passwordVerification,
+				status: self.plugin.AccountToken.constants.status.pending
 			}, function(err, tokens) {
 				if(err)
 					return self.result(false, done, account, 'database failure', err);

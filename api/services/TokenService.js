@@ -12,7 +12,7 @@ module.exports = new function(){
 		'object': function(criteria, next) {
 			if(criteria.id === undefined || Object.keys(criteria).length == 1) {
 				// Use a standard object as a Waterline query
-				self.bulkhead.AccountToken.find().where(criteria).exec(next);
+				self.plugin.AccountToken.find().where(criteria).exec(next);
 			} else {
 				// Use the Model instance directly
 				next(null, criteria);
@@ -33,9 +33,9 @@ module.exports = new function(){
 
 		this.find(accountCriteria, function(err, accounts) {
 			async.concat(accounts.responses(), function(account, next) {
-				self.bulkhead.AccountToken.create({
-					type:		type || self.bulkhead.AccountToken.constants.type.passwordVerification,
-					status:		status || self.bulkhead.AccountToken.constants.status.pending,
+				self.plugin.AccountToken.create({
+					type:		type || self.plugin.AccountToken.constants.type.passwordVerification,
+					status:		status || self.plugin.AccountToken.constants.status.pending,
 					expiresAt:	new Date(Date.now() + expiresAt * 1000),
 					account:	account.id,
 					contents:	contents || null
@@ -57,10 +57,10 @@ module.exports = new function(){
 		var self = this;
 		this.find(criteria, function(err, results) {
 			var token = results.response();
-			self.bulkhead.AccountToken.update({
+			self.plugin.AccountToken.update({
 				id: token.id
 			},{
-				status: self.bulkhead.AccountToken.constants.status.pending
+				status: self.plugin.AccountToken.constants.status.pending
 			}, function(err, account) {
 				done(err, self.result(new Bulkhead.result(token, true)));	
 			});
@@ -74,17 +74,17 @@ module.exports = new function(){
 		var self = this;
 		this.find(criteria, function(err, tokens) {
 			async.concat(tokens.responses(), function(token, next) {
-				if(token.status === self.bulkhead.AccountToken.constants.status.pending) {
+				if(token.status === self.plugin.AccountToken.constants.status.pending) {
 					// The token can be consumed
 					if(Date.now() >= token.expiresAt) {
 						// The token has expired and cannot be consumed
-						token.status = self.bulkhead.AccountToken.constants.status.expired;
+						token.status = self.plugin.AccountToken.constants.status.expired;
 						token.save(function(err, token) {
 							next(null, new Bulkhead.result(token, false, 'token has expired'));	
 						});
 					} else {
 						// The token can be consumed
-						token.status = self.bulkhead.AccountToken.constants.status.consumed;
+						token.status = self.plugin.AccountToken.constants.status.consumed;
 						token.save(function(err, token) {
 							next(null, new Bulkhead.result(token, token.contents));
 						});
@@ -105,13 +105,13 @@ module.exports = new function(){
 	 */
 	this.cleanup = function(done) {
 		var self = this;
-		self.bulkhead.AccountToken.destroy({ or: [
+		self.plugin.AccountToken.destroy({ or: [
 			{ 
 				expiresAt: { '<': new Date() }
 			}, { 
-				status: self.bulkhead.AccountToken.constants.status.expired 
+				status: self.plugin.AccountToken.constants.status.expired 
 			}, { 
-				status: self.bulkhead.AccountToken.constants.status.consumed 
+				status: self.plugin.AccountToken.constants.status.consumed 
 			}
 		]}, function(err) {
 			done(err, self.result(true));
