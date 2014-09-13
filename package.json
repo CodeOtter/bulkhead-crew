@@ -1,6 +1,6 @@
 {
   "name": "bulkhead-crew",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Bulkhead service for SailsJS that quickly integrates PassportJS.",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   "dependencies": {
     "async": "^0.9.0",
     "bcrypt": "^0.8.0",
-    "bulkhead": "0.0.6",
+    "bulkhead": "0.0.7",
     "bulkhead-mailer": "0.0.5",
     "guid": "0.0.12",
     "passport": "^0.2.0",
@@ -38,8 +38,7 @@
     "validator": "^3.16.1"
   },
   "devDependencies": {
-    "bulkhead-test": "0.0.5",
-    "grunt": "^0.4.5",
+    "bulkhead-test": "0.0.6",
     "sails-mysql": "^0.10.4"
   }
 }
