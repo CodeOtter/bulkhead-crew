@@ -36,8 +36,8 @@ module.exports = new function(){
 			data.email = (data.email).toString();
 			data.password = (data.password).toString();
 			data.name = (data.name).toString();
-			data.type = Account.constants.type.standard;		// @TODO: Only let admins set type
-			data.status = Account.constants.status.unverified;	// @TODO: Only let admins set status
+			data.type = self.plugin.Account.constants.type.standard;		// @TODO: Only let admins set type
+			data.status = self.plugin.Account.constants.status.unverified;	// @TODO: Only let admins set status
 
 			if(!self.PolicyService.account.isEmailValid(data.email)) {
 				errors.push('email is invalid');
